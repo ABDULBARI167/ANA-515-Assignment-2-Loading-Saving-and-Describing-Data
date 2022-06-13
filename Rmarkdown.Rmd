@@ -1,0 +1,95 @@
+---
+title: "Loading, Saving, and Describing Data"
+author: "Mohammed Abdul Bari"
+date: '2022-06-11'
+output: word_document
+---
+
+```{r setup, include=FALSE}
+#click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```
+
+
+
+# Description of the data
+```{r}
+
+```
+This dataset contains data about police misconduct and how such misconduct Costs atlanta city millions every year in settlements and in the aspect of ensuring accountability.The data was collected, stored and categorized base on human judgement calls. Amount of money paid due to police misconduct constitutes of guesses for may be the range provided.This data contain descriptions of the types of misconduct and depicts the measure of police misconduct. The data was stored in a csv file whereby values are separated by comma.However,their width is not fixed unlike flat file.
+
+
+#Reading the data into R
+```{r read_data,echo=TRUE}
+read_data <- read.csv(url("https://raw.githubusercontent.com/fivethirtyeight/police-settlements/main/atlanta_ga/final/atlanta_edited.csv"))
+
+#I have used read.csv() function which is a base R function. This function creates a regular data frame. In addition, it takes three parameters: file location, header, separator
+# file location shows where the csv file if found.
+# header is a boolean which tells if the data contains header row,so the first row is the name of each column 
+# separator (sep) it shows the used field separator character 
+# declaring a dataframe
+```
+ 
+
+#Clean the data
+```{r, include=FALSE}
+#install.packages("janitor")
+library(janitor)
+```
+```{r clean,echo=FALSE}
+clean<-clean_names(read_data)
+colnames(clean)
+
+closed_date<-select(read_data, closed_date)
+formatted_date <- format(closed_date, format="%m - %d - %y")
+formatted_date
+#filtered data where amount_awarded is less or equal to 15000.00
+  read_data %>%filter(amount_awarded <= 15000.00)
+```
+
+
+#Characteristics of the data 
+```{r,echo=TRUE}
+#number of rows
+nrow(read_data)
+#number of columns
+ncol(read_data)
+#remove empty columns from the data frame
+empty_columns <- sapply(read_data, function(x) all(is.na(x) | x == ""))
+data <- read_data[, !empty_columns]
+#columns with data
+ncol(data)
+#remove empty rows from data frame
+data <- data[!apply(data == "", 1, all),]
+#rows with data
+nrow(data)
+col_name<- colnames(data)
+col_description <-c(" claim unique idententification code","Name of plaintiff or claimant","Description of allegations"," Amount awarded to claimant in the settlement","Date on which incident took place","claim closing date","legal demands for compensation or legal actions decided in court"," City name","State abbreviation","date denied","calendar year","incident year","matter name", "Court in which the settlement was reached, when available","Case docket number, when available","Case status as of the date the data was collected, e.g. whether a case was settled, went to jury, or is still pending","amount demanded by plaintiff")
+
+data <- data.frame(col_name, col_description)
+data
+library(knitr)
+kable(data[1:7,],caption="plantiff information")
+```
+
+# Summary statistics
+```{r,echo=TRUE}
+#maximum 
+ read_data %>% summarise_if(is.numeric, max)
+#minimum 
+ read_data %>% summarise_if(is.numeric, min)
+#mean 
+  mean(read_data$amount_awarded)
+#number of missing values 
+  count=0
+  for(i in 1:nrow(read_data)){
+    for(j in 1:ncol(read_data)){
+      if(isTRUE(read_data[i,j]=="")){
+        count = count + 1
+      }
+    }
+  }
+  count
+```
+
+
